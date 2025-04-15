@@ -4,7 +4,10 @@ import time
 
 from openai import OpenAI
 
+# OPENAI_BASE_URL = os.environ.get('OPENAI_BASE_URL', 'http://127.0.0.1:4000')
+# OPENAI_BASE_URL = os.environ.get('OPENAI_BASE_URL', 'http://127.0.0.1:8000')
 OPENAI_BASE_URL = os.environ.get('OPENAI_BASE_URL', 'https://api.rpa.icu')
+# OPENAI_BASE_URL = os.environ.get('OPENAI_BASE_URL', 'http://gpu01:12000')
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', 'https://t.me/evilfreelancer')
 DEFAULT_MODEL = 'large-v3-turbo'
 DEFAULT_LANGUAGE = "ru"
