@@ -11,6 +11,7 @@ DEFAULT_LANGUAGE = "ru"
 
 
 def main():
+    # Замер времени начала выполнения
     start_time = time.time()
 
     # Read the file from the file path by arguments of argparse
@@ -37,11 +38,11 @@ def main():
 
     # Save the transcription to the file
     if args.format == 'text':
-        extension = 'txt'
+        extension = 'json'
     elif args.format == 'srt':
-        extension = 'srt'
+        extension = 'json'
     elif args.format == 'vtt':
-        extension = 'vtt'
+        extension = 'json'
     elif args.format == 'json' or args.format == 'verbose_json':
         extension = 'json'
     else:
@@ -49,8 +50,11 @@ def main():
 
     # Remove extension from file name
     output_file = f'{os.path.splitext(args.file)[0]}.{extension}'
-    with open(output_file, 'w') as f:
-        f.write(transcription)
+    with open(output_file, 'w', encoding='utf-8') as f:
+        if args.format in ['json', 'verbose_json']:
+            f.write(transcription.model_dump_json(indent=2))
+        else:
+            f.write(transcription)
         print(f'Saved transcription to {output_file}')
 
     # Print time elapsed for transcription
