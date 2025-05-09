@@ -20,7 +20,7 @@ def main():
     # Read the file from the file path by arguments of argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('file', type=str)
-    parser.add_argument('--format', type=str, choices=['text', 'json', 'srt', 'verbose_json'], default='text')
+    parser.add_argument('--format', type=str, choices=['text', 'json', 'srt', 'verbose_json'], default='srt')
     parser.add_argument('--model', type=str, default=DEFAULT_MODEL)
     parser.add_argument('--language', type=str, default=DEFAULT_LANGUAGE)
     args = parser.parse_args()

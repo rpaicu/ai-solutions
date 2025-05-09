@@ -24,7 +24,7 @@ def main():
     parser.add_argument('--seed', type=int, default=42, help='Seed for generation')
     parser.add_argument('--temperature', type=float, default=0.7, help='Generation temperature (0.0-1.0)')
     parser.add_argument('--top-p', type=float, default=0.7, help='Top-p sampling (0.0-1.0)')
-    parser.add_argument('--voice', type=str, help='Voice preset')
+    parser.add_argument('--voice', type=str, default='english-nice', help='Voice preset')
 
     args = parser.parse_args()
 
@@ -51,12 +51,11 @@ def main():
         response = client.audio.speech.create(
             model=args.model,
             input=input_text,
-            voice='null',
+            voice=args.voice,
             extra_body={
                 "temperature": args.temperature,
-                "top-p": args.top_p,
-                "seed": args.seed,
-                # "reference-audio": reference_audio,
+                "top_p":       args.top_p,
+                "seed":        args.seed,
             }
         )
     finally:
