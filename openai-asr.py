@@ -1,37 +1,38 @@
 import os
 import argparse
 import time
+import json
 
 from openai import OpenAI
 
-# OPENAI_BASE_URL = os.environ.get('OPENAI_BASE_URL', 'http://127.0.0.1:4000')
-# OPENAI_BASE_URL = os.environ.get('OPENAI_BASE_URL', 'http://127.0.0.1:8000')
+# Read base URL and API key from environment or fallback to default values
 OPENAI_BASE_URL = os.environ.get('OPENAI_BASE_URL', 'https://api.rpa.icu')
-# OPENAI_BASE_URL = os.environ.get('OPENAI_BASE_URL', 'http://gpu01:12000')
+# OPENAI_BASE_URL = os.environ.get('OPENAI_BASE_URL', 'http://lb01:12000')
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', 'https://t.me/evilfreelancer')
 DEFAULT_MODEL = 'large-v3-turbo'
 DEFAULT_LANGUAGE = "ru"
 
 
 def main():
-    # Замер времени начала выполнения
+    # Measure execution start time
     start_time = time.time()
 
-    # Read the file from the file path by arguments of argparse
+    # Parse command-line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('file', type=str)
-    parser.add_argument('--format', type=str, choices=['text', 'json', 'srt', 'verbose_json'], default='srt')
+    parser.add_argument('--format', type=str, choices=["json", "text", "srt", "verbose_json", "vtt"], default='json')
     parser.add_argument('--model', type=str, default=DEFAULT_MODEL)
     parser.add_argument('--language', type=str, default=DEFAULT_LANGUAGE)
+    parser.add_argument('--raw', action='store_true', help='Save raw JSON response from API')
     args = parser.parse_args()
 
-    # Read the file from the file path
+    # Open input file in binary mode
     input_file = open(args.file, "rb")
 
-    # Initialize client
+    # Initialize OpenAI client
     client = OpenAI(base_url=OPENAI_BASE_URL, api_key=OPENAI_API_KEY)
 
-    # Run the transcription with time measurement
+    # Request transcription from OpenAI API
     transcription = client.audio.transcriptions.create(
         language=args.language,
         file=input_file,
@@ -39,28 +40,37 @@ def main():
         response_format=args.format,
     )
 
-    # Save the transcription to the file
-    if args.format == 'text':
-        extension = 'json'
-    elif args.format == 'srt':
-        extension = 'json'
-    elif args.format == 'vtt':
-        extension = 'json'
-    elif args.format == 'json' or args.format == 'verbose_json':
-        extension = 'json'
-    else:
-        raise ValueError('Invalid format')
+    # Determine output file path and extension
+    output_path = os.path.splitext(args.file)[0]
 
-    # Remove extension from file name
-    output_file = f'{os.path.splitext(args.file)[0]}.{extension}'
-    with open(output_file, 'w', encoding='utf-8') as f:
-        if args.format in ['json', 'verbose_json']:
-            f.write(transcription.model_dump_json(indent=2))
-        else:
+    # If --raw is set, save the full JSON response regardless of the format
+    if args.raw:
+        extension = 'json'
+        output_file = f'{output_path}.{extension}'
+        with open(output_file, 'w', encoding='utf-8') as f:
             f.write(transcription)
-        print(f'Saved transcription to {output_file}')
+    else:
+        # Handle standard formatting
+        if args.format in ['json', 'verbose_json']:
+            extension = 'json'
+            content = transcription
+        elif args.format == 'srt':
+            extension = 'srt'
+            content = json.loads(transcription)['text']
+        elif args.format == 'text':
+            extension = 'txt'
+            content = json.loads(transcription)['text']
+        else:
+            raise ValueError(f"Unsupported format: {args.format}")
 
-    # Print time elapsed for transcription
+        output_file = f'{output_path}.{extension}'
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(content)
+
+    # Print result file path
+    print(f'Saved transcription to {output_file}')
+
+    # Print total execution time
     total_elapsed = time.time() - start_time
     print(f"\nTotal execution time: {total_elapsed:.2f} seconds")
 
